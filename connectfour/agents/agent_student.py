@@ -1,6 +1,7 @@
 from connectfour.agents.computer_player import RandomAgent
 from connectfour.agents.agent import Agent
 import random
+import math
 
 class StudentAgent(Agent):
     def __init__(self, name):
@@ -33,9 +34,16 @@ class StudentAgent(Agent):
     def dfMiniMax(self, board, depth):
         # Goal return column with maximized scores of all possible next states
         bestVal = 0
+        winner = board.winner()
+        opponent = self.id % 2 + 1
         
-        if depth == self.MaxDepth:
-            return self.evaluateBoardState(board)
+        if depth == self.MaxDepth or winner != 0 :
+            if winner == self.id:
+                return 10000000
+            elif winner == opponent:
+                return -10000000
+            else:
+                return self.evaluateBoardState(board)
 
         valid_moves = board.valid_moves()
         vals = []
@@ -43,7 +51,7 @@ class StudentAgent(Agent):
 
         for move in valid_moves:
             if depth % 2 == 1:
-                next_state = board.next_state(self.id % 2 + 1, move[1])
+                next_state = board.next_state(opponent, move[1])
             else:
                 next_state = board.next_state(self.id, move[1])
                 
@@ -93,7 +101,6 @@ class StudentAgent(Agent):
     
     def _check_score(self, board):
         score = 0
-        
         #Check center pieces
         center_piece = []
         for row in range(board.height):
@@ -124,7 +131,7 @@ class StudentAgent(Agent):
             for col in range(board.width - 3):
                 connect = [board.get_cell_value(row+i, col+i) for i in range(board.num_to_connect)]
                 score += self._check_connect(connect)
-       
+
         return score
     
     def _check_connect(self,connect):
@@ -136,7 +143,8 @@ class StudentAgent(Agent):
             score += 5
         elif connect.count(self.id) == 2 and connect.count(0) == 2:
             score += 2
-        elif connect.count(self.id%2+1) == 3 and connect.count(0) == 1:
-            score -= 45
+            
+        if connect.count(self.id%2+1) == 3 and connect.count(0) == 1:
+            score -= 25
 
         return score
